@@ -1,3 +1,27 @@
+# Recipe Integration App
+
+## Overview
+An app to quickly find and manage recipes while cooking.
+
+## Goal
+Help users instantly access recipes they want to use in the kitchen.
+
+## Core Features
+- Recipe scanning
+- Recipe search
+- Recipe saving
+- Recipe organization
+
+## Target Users
+People who enjoy cooking and baking.
+
+## Project Status
+Planning phase
+
+## Tech Stack
+TBD
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 # 🍽️ Recipe Integration App
 
 レシピ統合モバイルアプリケーション開発プロジェクト  
