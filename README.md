@@ -1,310 +1,207 @@
-# Recipe Integration App
-
-## Overview
-An app to quickly find and manage recipes while cooking.
-
-## Goal
-Help users instantly access recipes they want to use in the kitchen.
-
-## Core Features
-- Recipe scanning
-- Recipe search
-- Recipe saving
-- Recipe organization
-
-## Target Users
-People who enjoy cooking and baking.
-
-## Project Status
-Planning phase
-
-## Tech Stack
-TBD
-
-ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 # 🍽️ Recipe Integration App
 
-レシピ統合モバイルアプリケーション開発プロジェクト  
-Recipe Integration Mobile Application Project
+A mobile application for capturing, organizing, and retrieving recipes quickly while cooking.
 
 ---
 
-## 📱 プロジェクト概要 / Project Overview
+## 📱 Project Overview
 
-- **目標 / Goal**: Apple App Store へのリリース / Release on Apple App Store  
-- **開発段階 / Phase**: 企画・仕様整理・画面設計・開発ルール整備  
-  / Planning, specification, UI design, and development setup  
-- **チームサイズ / Team Size**: 2-3名 / 2-3 members  
+- **Goal**: Release on the Apple App Store
+- **Phase**: Planning, specification, UI design, and development setup
+- **Team Size**: 2-3 members
 
 ---
 
-## 🚀 クイックスタート / Quick Start
+## 🔧 Tech Stack
+
+### Frontend
+- React Native (Expo)
+- TypeScript
+- AsyncStorage (local persistence)
+- Expo Image Picker (camera / photo library)
+
+### Backend (MVP)
+- None (local storage only)
+
+### Future Backend (Post-MVP)
+- Firebase or Supabase (TBD)
+
+### AI / OCR (Post-MVP)
+- Google Vision API or OpenAI Vision (TBD)
+
+### Design
+- Figma (UX team)
+- Mobile-first design
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-# ブランチ確認 / Check branches
+# Check branches
 git branch
 
-# 機能開発を始める / Start feature development
+# Start feature development
 git checkout -b feature/your-feature-name develop
 
-# 実装 → コミット → push → Pull Request
 # Implement → Commit → Push → Pull Request
-📋 GitHub運用ルール / GitHub Rules
-🧠 基本原則 / Principles
+```
 
-このプロジェクトはGitHubを中心に管理しています。
-This project is managed using GitHub.
+---
 
-✅ すべての作業はIssueから始まる
-All tasks must start from an Issue
-✅ コードはレビューを通してからマージ
-Code must be reviewed before merging
-✅ 小さく分けて、早くレビューする
-Keep changes small and review quickly
-🌿 ブランチ運用 / Branch Strategy
-main (本番 / production)
+## 🛠 Development Workflow
+
+### Branch Strategy
+- `main` → production-ready
+- `develop` → integration branch
+- `feature/*` → new features
+- `fix/*` → bug fixes
+
+### Pull Request Rules
+- At least 1 reviewer required
+- Clear title + description
+- Link related issue
+
+### Commit Naming
+- `feat:` add recipe creation
+- `fix:` resolve image picker bug
+- `refactor:` split components
+- `chore:` update dependencies
+
+### Issue Usage
+- Every task must have an issue
+- Use labels:
+  - `frontend`
+  - `backend`
+  - `ux`
+  - `bug`
+  - `enhancement`
+
+---
+
+## 📋 GitHub Rules
+
+### Core Principles
+
+- ✅ All tasks must start from an Issue
+- ✅ Code must be reviewed before merging
+- ✅ Keep changes small and review quickly
+
+### Branch Flow
+
+```
+main (production)
   ↑
-develop (開発統合 / development)
+develop (integration)
   ↑
-feature/xxx (機能開発 / feature)
+feature/xxx (feature development)
+```
 
-ルール / Rules:
+**Rules:**
+- 🚫 No direct push to `main`
+- 🚫 No work without an Issue
+- 🚫 No merge without review
 
-🚫 main に直接 push 禁止
-No direct push to main
-🚫 Issue なしで作業開始禁止
-No work without an Issue
-🚫 Review なしでマージ禁止
-No merge without review
-🔄 開発フロー / Development Flow
-1. Issue 作成 / Create Issue
-   ↓
-2. ブランチ作成 / Create branch from develop
-   ↓
-3. 実装 + コミット / Implement + Commit
-   ↓
+### Development Flow
+
+1. Create an Issue
+2. Create a branch from `develop`
+3. Implement + Commit
 4. Push + Pull Request
-   ↓
-5. Review → developへマージ / Merge to develop
-📝 Issue ルール / Issue Rules
-タイトルは明確に
-Use clear titles
-例: [機能] ログイン画面の実装 / [Feature] Login screen implementation
-内容は箇条書き
-Use bullet points
-完了条件を必ず記載
-Always define completion criteria
-
-👉 Issue作成時にテンプレが表示されます
-Template will appear when creating Issue
-
-🔀 Pull Request ルール / PR Rules
-変更内容を簡潔に説明
-Describe changes clearly
-対応Issue番号を記載
-Link related Issue
-確認方法を記載
-Provide steps to test
-
-👉 PR作成時にテンプレが表示されます
-Template will appear when creating PR
-
-💬 コミットメッセージ / Commit Messages
-feat: 新機能 / new feature
-fix: バグ修正 / bug fix
-refactor: 改善 / refactor
-docs: ドキュメント / docs
-💬 使用言語 / Language
-
-このプロジェクトでは日本語と英語の両方を使用します。
-This project supports both Japanese and English.
-
-Issue / PR / コミット: 日本語・英語どちらでもOK
-Issues/PRs/commits can be in Japanese or English
-コードコメント: 英語推奨（可能なら併記）
-Code comments should be in English (Japanese optional)
-
-例 / Example:
-
-// ユーザーのログイン状態を確認
-// Check user login status
-🛠️ 使用技術 / Tech Stack
-開発環境 / Environment: TBD
-API: TBD
-デザイン / Design: TBD
-📞 コミュニケーション / Communication
-GitHub Issue → タスク管理 / Task management
-Discord / Slack → 会話 / Chat
-Notion → 仕様書 / Documentation
-🚦 開発段階 / Roadmap
- 企画・仕様整理 / Planning
- 画面設計 / UI Design
- 開発ルール整備 / Setup
- ベース開発 / Base development
- 機能実装 / Features
- テスト / Testing
- App Store リリース / Release
-📚 参考資料 / References
-https://docs.github.com/en/get-started/quickstart/github-flow
-
-質問や問題があったらIssueを作成してください！
-If you have questions, create an Issue!
-
+5. Review → Merge to `develop`
 
 ---
 
-# 👍 ポイント
-これの良いところ👇
+## 👥 Team Members
 
-- 日本語メインで読みやすい  
-- 英語も自然に入ってる  
-- 外国人入っても即対応できる  
+| Name | Role | GitHub |
+|------|------|--------|
+| Kohei | PM / Frontend | TBD |
+| UX Member | UX Designer | TBD |
+| Developer | Frontend | TBD |
 
----
-
-もしさらにやるなら👇  
-👉「Issueテンプレも日英化」するとガチプロジェクトになる🔥
-そのままコピペできるようにしてください。
-
-了解、そのままGitHubに貼れる形で出すね👇（コードブロックそのまま全部コピーOK）
-
-# 🍽️ Recipe Integration App
-
-レシピ統合モバイルアプリケーション開発プロジェクト  
-Recipe Integration Mobile Application Project
+> All members must share their GitHub account and be added as collaborators.
 
 ---
 
-## 📱 プロジェクト概要 / Project Overview
+## 🌿 Branch Status
 
-- **目標 / Goal**: Apple App Store へのリリース / Release on Apple App Store  
-- **開発段階 / Phase**: 企画・仕様整理・画面設計・開発ルール整備  
-  / Planning, specification, UI design, and development setup  
-- **チームサイズ / Team Size**: 2-3名 / 2-3 members  
+Current branches:
 
----
+- `main`
+- `develop` (to be created)
+- `feature/mvp-ui` (to be created)
+- `feature/image-input` (to be created)
+- `feature/local-storage` (to be created)
 
-## 🚀 クイックスタート / Quick Start
-
-```bash
-# ブランチ確認 / Check branches
-git branch
-
-# 機能開発を始める / Start feature development
-git checkout -b feature/your-feature-name develop
-
-# 実装 → コミット → push → Pull Request
-# Implement → Commit → Push → Pull Request
-📋 GitHub運用ルール / GitHub Rules
-🧠 基本原則 / Principles
-
-このプロジェクトはGitHubを中心に管理しています。
-This project is managed using GitHub.
-
-✅ すべての作業はIssueから始まる
-All tasks must start from an Issue
-✅ コードはレビューを通してからマージ
-Code must be reviewed before merging
-✅ 小さく分けて、早くレビューする
-Keep changes small and review quickly
-🌿 ブランチ運用 / Branch Strategy
-main (本番 / production)
-  ↑
-develop (開発統合 / development)
-  ↑
-feature/xxx (機能開発 / feature)
-
-ルール / Rules:
-
-🚫 main に直接 push 禁止
-No direct push to main
-🚫 Issue なしで作業開始禁止
-No work without an Issue
-🚫 Review なしでマージ禁止
-No merge without review
-🔄 開発フロー / Development Flow
-1. Issue 作成 / Create Issue
-   ↓
-2. ブランチ作成 / Create branch from develop
-   ↓
-3. 実装 + コミット / Implement + Commit
-   ↓
-4. Push + Pull Request
-   ↓
-5. Review → developへマージ / Merge to develop
-📝 Issue ルール / Issue Rules
-タイトルは明確に
-Use clear titles
-例: [機能] ログイン画面の実装 / [Feature] Login screen implementation
-内容は箇条書き
-Use bullet points
-完了条件を必ず記載
-Always define completion criteria
-
-👉 Issue作成時にテンプレが表示されます
-Template will appear when creating Issue
-
-🔀 Pull Request ルール / PR Rules
-変更内容を簡潔に説明
-Describe changes clearly
-対応Issue番号を記載
-Link related Issue
-確認方法を記載
-Provide steps to test
-
-👉 PR作成時にテンプレが表示されます
-Template will appear when creating PR
-
-💬 コミットメッセージ / Commit Messages
-feat: 新機能 / new feature
-fix: バグ修正 / bug fix
-refactor: 改善 / refactor
-docs: ドキュメント / docs
-💬 使用言語 / Language
-
-このプロジェクトでは日本語と英語の両方を使用します。
-This project supports both Japanese and English.
-
-Issue / PR / コミット: 日本語・英語どちらでもOK
-Issues/PRs/commits can be in Japanese or English
-コードコメント: 英語推奨（可能なら併記）
-Code comments should be in English (Japanese optional)
-
-例 / Example:
-
-// ユーザーのログイン状態を確認
-// Check user login status
-🛠️ 使用技術 / Tech Stack
-開発環境 / Environment: TBD
-API: TBD
-デザイン / Design: TBD
-📞 コミュニケーション / Communication
-GitHub Issue → タスク管理 / Task management
-Discord / Slack → 会話 / Chat
-Notion → 仕様書 / Documentation
-🚦 開発段階 / Roadmap
- 企画・仕様整理 / Planning
- 画面設計 / UI Design
- 開発ルール整備 / Setup
- ベース開発 / Base development
- 機能実装 / Features
- テスト / Testing
- App Store リリース / Release
-📚 参考資料 / References
-https://docs.github.com/en/get-started/quickstart/github-flow
-
-質問や問題があったらIssueを作成してください！
-If you have questions, create an Issue!
+> All feature development should be done via feature branches.
 
 ---
 
-## 📚 参考資料
+## 📊 Project Management
 
-- [GitHub Flow について](https://docs.github.com/en/get-started/quickstart/github-flow)
-- [Issue テンプレの使い方](.github/ISSUE_TEMPLATE/task.md)
-- [PR テンプレの使い方](.github/PULL_REQUEST_TEMPLATE/default.md)
+### GitHub Project Board
+
+| Status | Description |
+|--------|-------------|
+| Backlog | Tasks not yet started |
+| In Progress | Currently being worked on |
+| Review | Awaiting code review |
+| Done | Completed |
+
+### Milestones
+
+#### MVP Release
+- Basic recipe save (image + title + notes)
+- Local storage
+- Search functionality
+
+#### Post-MVP
+- OCR integration
+- Cloud sync
+- User accounts
 
 ---
 
-**質問や問題があったら、Issue を作成してください！**　#test
+## 🚦 Roadmap
 
+- [x] Planning & specification
+- [ ] UI Design
+- [ ] Development setup
+- [ ] Base development
+- [ ] Feature implementation
+- [ ] Testing
+- [ ] App Store release
+
+---
+
+## 📝 Issue Rules
+
+- Use clear and descriptive titles
+  - Example: `[Feature] Recipe creation screen`
+- Use bullet points for task details
+- Always define completion criteria
+
+> An issue template will appear when creating a new issue.
+
+---
+
+## 🔀 Pull Request Rules
+
+- Clearly describe what changed
+- Link the related issue number (e.g. `close #5`)
+- Provide steps to test the changes
+
+> A PR template will appear when creating a new pull request.
+
+---
+
+## 📚 References
+
+- [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow)
+- [Issue Template](.github/ISSUE_TEMPLATE/task.md)
+- [PR Template](.github/PULL_REQUEST_TEMPLATE/default.md)
+
+---
+
+If you have any questions, please create an Issue!
