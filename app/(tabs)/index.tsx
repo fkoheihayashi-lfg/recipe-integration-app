@@ -1,98 +1,203 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from "react";
+import {
+  Button,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Recipe = {
+  id: string;
+  title: string;
+  notes: string;
+};
 
-export default function HomeScreen() {
+export default function App() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [search, setSearch] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const addRecipe = () => {
+    if (!title.trim()) return;
+
+    const newRecipe: Recipe = {
+      id: Date.now().toString(),
+      title: title.trim(),
+      notes: notes.trim(),
+    };
+
+    setRecipes((prev) => [newRecipe, ...prev]);
+    setTitle("");
+    setNotes("");
+    setModalVisible(false);
+  };
+
+  const filteredRecipes = recipes.filter((r) =>
+    r.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.title}>Recipe App</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TextInput
+        placeholder="Search..."
+        value={search}
+        onChangeText={setSearch}
+        style={styles.input}
+      />
+
+      <View style={styles.buttonWrapper}>
+        <Button title="Add Recipe" onPress={() => setModalVisible(true)} />
+      </View>
+
+      <Text style={styles.sectionTitle}>Saved Recipes</Text>
+
+      <FlatList
+        data={filteredRecipes}
+        keyExtractor={(item) => item.id}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No recipes yet</Text>
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.recipeItem}
+            onPress={() => {
+              setSelectedRecipe(item);
+              setDetailVisible(true);
+            }}
+          >
+            <Text style={styles.recipeTitle}>{item.title}</Text>
+            <Text style={styles.recipeNotes}>
+              {item.notes || "No notes"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>New Recipe</Text>
+
+          <TextInput
+            placeholder="Title"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Notes"
+            value={notes}
+            onChangeText={setNotes}
+            style={styles.input}
+          />
+
+          <View style={styles.modalButton}>
+            <Button title="Save" onPress={addRecipe} />
+          </View>
+
+          <View style={styles.modalButton}>
+            <Button title="Close" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={detailVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Recipe Detail</Text>
+          <Text style={styles.detailText}>Title: {selectedRecipe?.title}</Text>
+          <Text style={styles.detailText}>Notes: {selectedRecipe?.notes}</Text>
+
+          <View style={styles.modalButton}>
+            <Button title="Close" onPress={() => setDetailVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  buttonWrapper: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  emptyText: {
+    color: "#666",
+    marginTop: 12,
+  },
+  recipeItem: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    marginBottom: 10,
+    backgroundColor: "#f9f9f9",
+  },
+  recipeTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  recipeNotes: {
+    fontSize: 14,
+    color: "#555",
+  },
+  modalContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 12,
   },
 });
