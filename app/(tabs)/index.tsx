@@ -1,4 +1,5 @@
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
@@ -26,7 +27,38 @@ export default function App() {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
 
-  const addRecipe = () => {
+useEffect(() => {
+  loadRecipes();
+}, []);
+
+useEffect(() => {
+  saveRecipes();
+}, [recipes]);
+
+const loadRecipes = async () => {
+  try {
+    const storedRecipes = await AsyncStorage.getItem("recipes");
+    if (storedRecipes !== null) {
+      setRecipes(JSON.parse(storedRecipes));
+    }
+  } catch (error) {
+    console.log("Failed to load recipes:", error);
+  }
+};
+
+const saveRecipes = async () => {
+  try {
+    await AsyncStorage.setItem("recipes", JSON.stringify(recipes));
+  } catch (error) {
+    console.log("Failed to save recipes:", error);
+  }
+};
+
+ const deleteRecipe = (id: string) => {
+  setRecipes((prev) => prev.filter((r) => r.id !== id));
+};
+
+const addRecipe = () => {
     if (!title.trim()) return;
 
     const newRecipe: Recipe = {
@@ -62,30 +94,35 @@ export default function App() {
 
       <Text style={styles.sectionTitle}>Saved Recipes</Text>
 
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No recipes yet</Text>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.recipeItem}
-            onPress={() => {
-              setSelectedRecipe(item);
-              setDetailVisible(true);
-            }}
-          >
-            <Text style={styles.recipeTitle}>{item.title}</Text>
-            <Text style={styles.recipeNotes}>
-              {item.notes || "No notes"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+<FlatList
+  data={filteredRecipes}
+  keyExtractor={(item) => item.id}
+  style={styles.list}
+  contentContainerStyle={styles.listContent}
+  ListEmptyComponent={
+    <Text style={styles.emptyText}>No recipes yet</Text>
+  }
+  renderItem={({ item }) => (
+    <View style={styles.recipeItem}>
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedRecipe(item);
+          setDetailVisible(true);
+        }}
+      >
+        <Text style={styles.recipeTitle}>{item.title}</Text>
+        <Text style={styles.recipeNotes}>
+          {item.notes || "No notes"}
+        </Text>
+      </TouchableOpacity>
 
+      <Button
+        title="Delete"
+        onPress={() => deleteRecipe(item.id)}
+      />
+    </View>
+  )}
+/>
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>New Recipe</Text>
