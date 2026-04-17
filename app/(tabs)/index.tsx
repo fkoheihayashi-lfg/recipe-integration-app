@@ -1,150 +1,165 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Button,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
 import RecipeDetailModal from "../../components/RecipeDetailModal";
 import RecipeFormModal from "../../components/RecipeFormModal";
-import type { Recipe } from "../../components/RecipeList";
-import RecipeList from "../../components/RecipeList";
+import RecipeList, { type Recipe } from "../../components/RecipeList";
+import OcrScanner from "../../components/ocr/OcrScanner";
+import { parseOcrResult, type OcrResult } from "../../utils/parseOcrResult";
 
-export default function App() {
+const STORAGE_KEY = "recipes";
+
+export default function Index() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [search, setSearch] = useState("");
+
   const [modalVisible, setModalVisible] = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [ocrVisible, setOcrVisible] = useState(false);
+
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
-
   const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadRecipes();
   }, []);
 
   useEffect(() => {
-    saveRecipes();
+    saveRecipes(recipes);
   }, [recipes]);
 
-  const loadRecipes = async () => {
+  async function loadRecipes() {
     try {
-      const storedRecipes = await AsyncStorage.getItem("recipes");
-      if (storedRecipes !== null) {
-        setRecipes(JSON.parse(storedRecipes));
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setRecipes(JSON.parse(stored));
       }
     } catch (error) {
-      console.log("Failed to load recipes:", error);
+      console.error("Failed to load recipes:", error);
     }
-  };
+  }
 
-  const saveRecipes = async () => {
+  async function saveRecipes(nextRecipes: Recipe[]) {
     try {
-      await AsyncStorage.setItem("recipes", JSON.stringify(recipes));
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextRecipes));
     } catch (error) {
-      console.log("Failed to save recipes:", error);
+      console.error("Failed to save recipes:", error);
     }
-  };
+  }
 
-  const resetForm = () => {
+  function resetForm() {
     setTitle("");
     setNotes("");
-    setSelectedRecipe(null);
     setIsEditing(false);
-  };
+    setEditingId(null);
+  }
 
-  const openAddModal = () => {
+  function openAddModal() {
     resetForm();
     setModalVisible(true);
-  };
+  }
 
-  const openDetailModal = (item: Recipe) => {
-    setSelectedRecipe(item);
-    setDetailVisible(true);
-  };
-
-  const openEditModal = (item: Recipe) => {
-    setSelectedRecipe(item);
-    setTitle(item.title);
-    setNotes(item.notes);
+  function openEditModal(recipe: Recipe) {
+    setTitle(recipe.title);
+    setNotes(recipe.notes);
     setIsEditing(true);
-    setDetailVisible(false);
+    setEditingId(recipe.id);
     setModalVisible(true);
-  };
+  }
 
-  const addRecipe = () => {
+  function openDetailModal(recipe: Recipe) {
+    setSelectedRecipe(recipe);
+    setDetailVisible(true);
+  }
+
+  function deleteRecipe(id: string) {
+    setRecipes((prev) => prev.filter((recipe) => recipe.id !== id));
+
+    if (selectedRecipe?.id === id) {
+      setSelectedRecipe(null);
+      setDetailVisible(false);
+    }
+
+    if (editingId === id) {
+      resetForm();
+      setModalVisible(false);
+    }
+  }
+
+  function handleSave() {
     if (!title.trim()) {
       Alert.alert("Title required", "Please enter a recipe title.");
       return;
     }
 
-    const newRecipe: Recipe = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      notes: notes.trim(),
-    };
+    if (isEditing && editingId) {
+      setRecipes((prev) =>
+        prev.map((recipe) =>
+          recipe.id === editingId
+            ? {
+                ...recipe,
+                title: title.trim(),
+                notes: notes.trim(),
+              }
+            : recipe
+        )
+      );
 
-    setRecipes((prev) => [newRecipe, ...prev]);
-    resetForm();
-    setModalVisible(false);
-  };
-
-  const updateRecipe = () => {
-    if (!selectedRecipe) return;
-
-    if (!title.trim()) {
-      Alert.alert("Title required", "Please enter a recipe title.");
-      return;
-    }
-
-    setRecipes((prev) =>
-      prev.map((recipe) =>
-        recipe.id === selectedRecipe.id
-          ? {
-              ...recipe,
-              title: title.trim(),
-              notes: notes.trim(),
-            }
-          : recipe
-      )
-    );
-
-    resetForm();
-    setModalVisible(false);
-  };
-
-  const handleSave = () => {
-    if (isEditing) {
-      updateRecipe();
+      if (selectedRecipe?.id === editingId) {
+        setSelectedRecipe({
+          ...selectedRecipe,
+          title: title.trim(),
+          notes: notes.trim(),
+        });
+      }
     } else {
-      addRecipe();
+      const newRecipe: Recipe = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        notes: notes.trim(),
+      };
+
+      setRecipes((prev) => [newRecipe, ...prev]);
     }
-  };
 
-  const deleteRecipe = (id: string) => {
-    Alert.alert("Delete Recipe", "Are you sure you want to delete this recipe?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          setRecipes((prev) => prev.filter((r) => r.id !== id));
+    setModalVisible(false);
+    resetForm();
+  }
 
-          if (selectedRecipe?.id === id) {
-            setSelectedRecipe(null);
-            setDetailVisible(false);
-          }
-        },
-      },
-    ]);
-  };
+  function handleOcrResult(result: OcrResult) {
+    const parsed = parseOcrResult(result);
+
+    setTitle(parsed.title);
+    setNotes(parsed.notes);
+    setIsEditing(false);
+    setEditingId(null);
+
+    setOcrVisible(false);
+    setModalVisible(true);
+  }
 
   const filteredRecipes = useMemo(() => {
-    const keyword = search.toLowerCase().trim();
+    const keyword = search.trim().toLowerCase();
 
-    return recipes.filter((r) => {
+    if (!keyword) return recipes;
+
+    return recipes.filter((recipe) => {
       return (
-        r.title.toLowerCase().includes(keyword) ||
-        r.notes.toLowerCase().includes(keyword)
+        recipe.title.toLowerCase().includes(keyword) ||
+        recipe.notes.toLowerCase().includes(keyword)
       );
     });
   }, [recipes, search]);
@@ -162,6 +177,7 @@ export default function App() {
 
       <View style={styles.buttonWrapper}>
         <Button title="Add Recipe" onPress={openAddModal} />
+        <Button title="Scan Recipe" onPress={() => setOcrVisible(true)} />
       </View>
 
       <Text style={styles.sectionTitle}>Saved Recipes</Text>
@@ -197,6 +213,15 @@ export default function App() {
           }
         }}
       />
+
+      <Modal visible={ocrVisible} animationType="slide">
+        <View style={styles.ocrContainer}>
+          <OcrScanner
+            onClose={() => setOcrVisible(false)}
+            onResult={handleOcrResult}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -204,27 +229,35 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+    padding: 20,
+    paddingTop: 60,
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 12,
+    fontWeight: "700",
+    marginBottom: 16,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
+    borderRadius: 8,
     padding: 10,
     marginBottom: 12,
-    borderRadius: 8,
   },
   buttonWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  ocrContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
 });
