@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import OcrReviewModal from "../../components/OcrReviewModal";
 import RecipeDetailModal from "../../components/RecipeDetailModal";
 import RecipeFormModal from "../../components/RecipeFormModal";
 import type { Recipe } from "../../types/recipe";
@@ -20,6 +21,12 @@ import { sanitizeNotes, sanitizeTitle } from "../../utils/sanitize";
 
 const STORAGE_KEY = "recipes";
 
+type OcrDraft = {
+  title: string;
+  notes: string;
+  imageUri?: string;
+};
+
 export default function Index() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [search, setSearch] = useState("");
@@ -27,6 +34,9 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false);
   const [detailVisible, setDetailVisible] = useState(false);
   const [ocrVisible, setOcrVisible] = useState(false);
+  const [ocrReviewVisible, setOcrReviewVisible] = useState(false);
+
+  const [ocrDraft, setOcrDraft] = useState<OcrDraft | null>(null);
 
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
@@ -153,16 +163,41 @@ export default function Index() {
 
   function handleOcrResult(result: OcrResult) {
     const parsed = parseOcrResult(result);
+    setOcrDraft({ title: parsed.title, notes: parsed.notes, imageUri: result.imageUri });
+    setOcrVisible(false);
+    setOcrReviewVisible(true);
+  }
 
-    setTitle(parsed.title);
-    setNotes(parsed.notes);
-    setImageUri(result.imageUri);
+  function handleOcrUseThis() {
+    if (!ocrDraft) return;
+    const newRecipe: Recipe = {
+      id: Date.now().toString(),
+      title: ocrDraft.title,
+      notes: ocrDraft.notes,
+      imageUri: ocrDraft.imageUri,
+      source: "ocr",
+    };
+    setRecipes((prev) => [newRecipe, ...prev]);
+    setOcrDraft(null);
+    setOcrReviewVisible(false);
+  }
+
+  function handleOcrEdit() {
+    if (!ocrDraft) return;
+    setTitle(ocrDraft.title);
+    setNotes(ocrDraft.notes);
+    setImageUri(ocrDraft.imageUri);
     setIsOcrImported(true);
     setIsEditing(false);
     setEditingId(null);
-
-    setOcrVisible(false);
+    setOcrDraft(null);
+    setOcrReviewVisible(false);
     setModalVisible(true);
+  }
+
+  function handleOcrCancel() {
+    setOcrDraft(null);
+    setOcrReviewVisible(false);
   }
 
   const filteredRecipes = useMemo(() => {
@@ -228,6 +263,16 @@ export default function Index() {
             openEditModal(selectedRecipe);
           }
         }}
+      />
+
+      <OcrReviewModal
+        visible={ocrReviewVisible}
+        title={ocrDraft?.title ?? ""}
+        notes={ocrDraft?.notes ?? ""}
+        imageUri={ocrDraft?.imageUri}
+        onUseThis={handleOcrUseThis}
+        onEdit={handleOcrEdit}
+        onCancel={handleOcrCancel}
       />
 
       <Modal visible={ocrVisible} animationType="slide">
