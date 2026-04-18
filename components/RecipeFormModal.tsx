@@ -1,8 +1,10 @@
-import { Button, Modal, StyleSheet, Text, TextInput, View } from "react-native";
+import { Button, Image, Modal, StyleSheet, Text, TextInput, View } from "react-native";
 
 type RecipeFormModalProps = {
   visible: boolean;
   isEditing: boolean;
+  isOcrImported?: boolean;
+  imageUri?: string;
   title: string;
   notes: string;
   onChangeTitle: (text: string) => void;
@@ -14,6 +16,8 @@ type RecipeFormModalProps = {
 export default function RecipeFormModal({
   visible,
   isEditing,
+  isOcrImported,
+  imageUri,
   title,
   notes,
   onChangeTitle,
@@ -27,6 +31,16 @@ export default function RecipeFormModal({
         <Text style={styles.modalTitle}>
           {isEditing ? "Edit Recipe" : "New Recipe"}
         </Text>
+
+        {isOcrImported && (
+          <Text style={styles.ocrBanner}>
+            Imported from OCR — please review before saving
+          </Text>
+        )}
+
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+        )}
 
         <TextInput
           placeholder="Title"
@@ -80,5 +94,20 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     marginTop: 10,
+  },
+  ocrBanner: {
+    backgroundColor: "#FFF3CD",
+    color: "#856404",
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 12,
+    fontSize: 13,
+  },
+  imagePreview: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+    marginBottom: 12,
+    resizeMode: "cover",
   },
 });

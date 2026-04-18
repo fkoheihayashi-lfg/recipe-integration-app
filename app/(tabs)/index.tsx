@@ -12,9 +12,11 @@ import {
 
 import RecipeDetailModal from "../../components/RecipeDetailModal";
 import RecipeFormModal from "../../components/RecipeFormModal";
-import RecipeList, { type Recipe } from "../../components/RecipeList";
+import type { Recipe } from "../../types/recipe";
+import RecipeList from "../../components/RecipeList";
 import OcrScanner from "../../components/ocr/OcrScanner";
 import { parseOcrResult, type OcrResult } from "../../utils/parseOcrResult";
+import { sanitizeNotes, sanitizeTitle } from "../../utils/sanitize";
 
 const STORAGE_KEY = "recipes";
 
@@ -30,6 +32,8 @@ export default function Index() {
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+  const [isOcrImported, setIsOcrImported] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -63,6 +67,8 @@ export default function Index() {
   function resetForm() {
     setTitle("");
     setNotes("");
+    setImageUri(undefined);
+    setIsOcrImported(false);
     setIsEditing(false);
     setEditingId(null);
   }
@@ -75,6 +81,8 @@ export default function Index() {
   function openEditModal(recipe: Recipe) {
     setTitle(recipe.title);
     setNotes(recipe.notes);
+    setImageUri(recipe.imageUri);
+    setIsOcrImported(false);
     setIsEditing(true);
     setEditingId(recipe.id);
     setModalVisible(true);
@@ -111,8 +119,9 @@ export default function Index() {
           recipe.id === editingId
             ? {
                 ...recipe,
-                title: title.trim(),
-                notes: notes.trim(),
+                title: sanitizeTitle(title),
+                notes: sanitizeNotes(notes),
+                imageUri,
               }
             : recipe
         )
@@ -121,15 +130,18 @@ export default function Index() {
       if (selectedRecipe?.id === editingId) {
         setSelectedRecipe({
           ...selectedRecipe,
-          title: title.trim(),
-          notes: notes.trim(),
+          title: sanitizeTitle(title),
+          notes: sanitizeNotes(notes),
+          imageUri,
         });
       }
     } else {
       const newRecipe: Recipe = {
         id: Date.now().toString(),
-        title: title.trim(),
-        notes: notes.trim(),
+        title: sanitizeTitle(title),
+        notes: sanitizeNotes(notes),
+        imageUri,
+        source: isOcrImported ? "ocr" : "manual",
       };
 
       setRecipes((prev) => [newRecipe, ...prev]);
@@ -144,6 +156,8 @@ export default function Index() {
 
     setTitle(parsed.title);
     setNotes(parsed.notes);
+    setImageUri(result.imageUri);
+    setIsOcrImported(true);
     setIsEditing(false);
     setEditingId(null);
 
@@ -192,6 +206,8 @@ export default function Index() {
       <RecipeFormModal
         visible={modalVisible}
         isEditing={isEditing}
+        isOcrImported={isOcrImported}
+        imageUri={imageUri}
         title={title}
         notes={notes}
         onChangeTitle={setTitle}

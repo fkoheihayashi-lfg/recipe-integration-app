@@ -1,10 +1,5 @@
 import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-export type Recipe = {
-  id: string;
-  title: string;
-  notes: string;
-};
+import type { Recipe } from "../types/recipe";
 
 type RecipeListProps = {
   recipes: Recipe[];
@@ -31,6 +26,7 @@ export default function RecipeList({
           <TouchableOpacity onPress={() => onPressItem(item)}>
             <Text style={styles.recipeTitle}>{item.title}</Text>
             <Text style={styles.recipeNotes}>{item.notes || "No notes"}</Text>
+            {item.imageUri ? <Text style={styles.imageIndicator}>📷 Image attached</Text> : null}
           </TouchableOpacity>
 
           <View style={styles.recipeButtonRow}>
@@ -76,5 +72,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 10,
+  },
+  imageIndicator: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 2,
+    marginBottom: 4,
   },
 });

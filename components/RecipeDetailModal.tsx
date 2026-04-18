@@ -1,5 +1,5 @@
-import { Button, Modal, StyleSheet, Text, View } from "react-native";
-import type { Recipe } from "./RecipeList";
+import { Button, Image, Modal, StyleSheet, Text, View } from "react-native";
+import type { Recipe } from "../types/recipe";
 
 type RecipeDetailModalProps = {
   visible: boolean;
@@ -18,6 +18,10 @@ export default function RecipeDetailModal({
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
         <Text style={styles.modalTitle}>Recipe Detail</Text>
+
+        {recipe?.imageUri && (
+          <Image source={{ uri: recipe.imageUri }} style={styles.image} />
+        )}
 
         <Text style={styles.detailLabel}>Title</Text>
         <Text style={styles.detailText}>{recipe?.title}</Text>
@@ -63,5 +67,12 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 16,
     marginBottom: 12,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+    resizeMode: "cover",
   },
 });
