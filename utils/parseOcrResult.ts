@@ -1,3 +1,5 @@
+import { sanitizeNotes, sanitizeTitle } from "./sanitize";
+
 export type OcrResult = {
   imageUri?: string;
   rawText?: string;
@@ -9,6 +11,14 @@ export function parseOcrResult(result: OcrResult): {
   title: string;
   notes: string;
 } {
+  const raw = resolveRaw(result);
+  return {
+    title: sanitizeTitle(raw.title),
+    notes: sanitizeNotes(raw.notes),
+  };
+}
+
+function resolveRaw(result: OcrResult): { title: string; notes: string } {
   const rawText = result.rawText?.trim() ?? "";
   const suggestedTitle = result.titleSuggestion?.trim() ?? "";
   const suggestedNotes = result.notesSuggestion?.trim() ?? "";
