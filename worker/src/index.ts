@@ -4,6 +4,7 @@ export interface Env {
   GITHUB_PROJECT_NUMBER: string;
   DISCORD_DASHBOARD_WEBHOOK_URL: string;
   DISCORD_ALERTS_WEBHOOK_URL: string;
+  DISCORD_DASHBOARD_MESSAGE_ID?: string;
 }
 
 type ScheduledController = {
@@ -230,8 +231,47 @@ function renderDashboard(items: WorkItem[]): string {
 }
 
 async function sendWebhook(url: string, content: string): Promise<Response> {
-  return fetch(url + "?wait=true", {
+  const webhookUrl = new URL(url);
+  webhookUrl.searchParams.set("wait", "true");
+
+  return fetch(webhookUrl.toString(), {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content }),
+  });
+}
+
+function buildWebhookMessageEditUrl(webhookUrl: string, messageId: string): string | null {
+  try {
+    const url = new URL(webhookUrl);
+    const segments = url.pathname.split("/").filter(Boolean);
+    const webhookIndex = segments.indexOf("webhooks");
+
+    if (webhookIndex === -1 || segments.length < webhookIndex + 3) {
+      return null;
+    }
+
+    const webhookId = segments[webhookIndex + 1];
+    const webhookToken = segments[webhookIndex + 2];
+    url.pathname = `/api/webhooks/${webhookId}/${webhookToken}/messages/${messageId}`;
+    url.search = "";
+    url.searchParams.set("wait", "true");
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function updateWebhookMessage(
+  webhookUrl: string,
+  messageId: string,
+  content: string,
+): Promise<Response | null> {
+  const editUrl = buildWebhookMessageEditUrl(webhookUrl, messageId);
+  if (!editUrl) return null;
+
+  return fetch(editUrl, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content }),
   });
@@ -277,6 +317,34 @@ async function notifyAlert(env: Env, message: string): Promise<void> {
   await sendWebhook(env.DISCORD_ALERTS_WEBHOOK_URL, message);
 }
 
+async function publishDashboard(
+  env: Env,
+  content: string,
+): Promise<{ mode: "fixed-message" | "webhook-post"; response: Response }> {
+  const messageId = env.DISCORD_DASHBOARD_MESSAGE_ID?.trim();
+
+  if (messageId) {
+    const editResponse = await updateWebhookMessage(
+      env.DISCORD_DASHBOARD_WEBHOOK_URL,
+      messageId,
+      content,
+    );
+
+    if (editResponse?.ok) {
+      return {
+        mode: "fixed-message",
+        response: editResponse,
+      };
+    }
+  }
+
+  const postResponse = await sendWebhook(env.DISCORD_DASHBOARD_WEBHOOK_URL, content);
+  return {
+    mode: "webhook-post",
+    response: postResponse,
+  };
+}
+
 export default {
   async fetch(_request: Request, env: Env): Promise<Response> {
     try {
@@ -294,9 +362,9 @@ export default {
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
     try {
       const { content } = await runDashboard(env);
-      const res = await sendWebhook(env.DISCORD_DASHBOARD_WEBHOOK_URL, content);
-      if (!res.ok) {
-        throw new Error(`Discord dashboard webhook failed: ${res.status}`);
+      const result = await publishDashboard(env, content);
+      if (!result.response.ok) {
+        throw new Error(`Discord dashboard delivery failed: ${result.response.status}`);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown scheduled worker error";
