@@ -1,4 +1,17 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+
+// ✅ Reads your API key safely from .env
+const OCR_API_KEY = process.env.EXPO_PUBLIC_OCR_SPACE_API_KEY;
 
 type OcrResult = {
   imageUri?: string;
