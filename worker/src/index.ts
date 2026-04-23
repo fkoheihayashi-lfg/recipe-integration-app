@@ -6,6 +6,11 @@ export interface Env {
   DISCORD_ALERTS_WEBHOOK_URL: string;
 }
 
+type ScheduledController = {
+  cron: string;
+  scheduledTime: number;
+};
+
 type WorkItem = {
   id: string;
   kind: "issue" | "pr" | "draft";
@@ -20,6 +25,12 @@ type WorkItem = {
 };
 
 const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
+const REQUIRED_ENV_KEYS = [
+  "GITHUB_TOKEN",
+  "GITHUB_ORG",
+  "GITHUB_PROJECT_NUMBER",
+  "DISCORD_DASHBOARD_WEBHOOK_URL",
+] as const;
 
 const PROJECT_QUERY = `
 query ProjectItems($org: String!, $number: Int!, $cursor: String) {
@@ -123,7 +134,7 @@ async function fetchProjectItems(env: Env): Promise<WorkItem[]> {
       throw new Error(`GitHub GraphQL request failed: ${res.status}`);
     }
 
-    const json = await res.json<any>();
+    const json = (await res.json()) as any;
     const project = json?.data?.organization?.projectV2;
     if (!project) {
       throw new Error("Project not found or query returned no data.");
@@ -226,19 +237,71 @@ async function sendWebhook(url: string, content: string): Promise<Response> {
   });
 }
 
+function getMissingEnvKeys(env: Env): string[] {
+  return REQUIRED_ENV_KEYS.filter((key) => !env[key]?.trim());
+}
+
+function buildPreviewResponse(items: WorkItem[], content: string): Response {
+  return new Response(
+    JSON.stringify(
+      {
+        ok: true,
+        mode: "preview",
+        items: items.length,
+        content,
+      },
+      null,
+      2,
+    ),
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+}
+
+async function runDashboard(env: Env): Promise<{ items: WorkItem[]; content: string }> {
+  const missing = getMissingEnvKeys(env);
+  if (missing.length) {
+    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  const items = await fetchProjectItems(env);
+  return {
+    items,
+    content: renderDashboard(items),
+  };
+}
+
+async function notifyAlert(env: Env, message: string): Promise<void> {
+  if (!env.DISCORD_ALERTS_WEBHOOK_URL?.trim()) return;
+  await sendWebhook(env.DISCORD_ALERTS_WEBHOOK_URL, message);
+}
+
 export default {
   async fetch(_request: Request, env: Env): Promise<Response> {
-    const items = await fetchProjectItems(env);
-    const content = renderDashboard(items);
-    const res = await sendWebhook(env.DISCORD_DASHBOARD_WEBHOOK_URL, content);
-    return new Response(JSON.stringify({ ok: res.ok, items: items.length }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const { items, content } = await runDashboard(env);
+      return buildPreviewResponse(items, content);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown worker error";
+      return new Response(JSON.stringify({ ok: false, error: message }, null, 2), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   },
 
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
-    const items = await fetchProjectItems(env);
-    const content = renderDashboard(items);
-    await sendWebhook(env.DISCORD_DASHBOARD_WEBHOOK_URL, content);
+    try {
+      const { content } = await runDashboard(env);
+      const res = await sendWebhook(env.DISCORD_DASHBOARD_WEBHOOK_URL, content);
+      if (!res.ok) {
+        throw new Error(`Discord dashboard webhook failed: ${res.status}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown scheduled worker error";
+      await notifyAlert(env, `Masako dashboard worker failed: ${message}`);
+      throw error;
+    }
   },
 };
