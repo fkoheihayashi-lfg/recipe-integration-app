@@ -16,6 +16,10 @@ Set these as Wrangler secrets for this Worker:
 - `DISCORD_DASHBOARD_WEBHOOK_URL`
 - `DISCORD_ALERTS_WEBHOOK_URL`
 
+Optional fixed-message setting:
+
+- `DISCORD_DASHBOARD_MESSAGE_ID`
+
 Recommended GitHub token posture for v1:
 
 - Use a token intended only for this dashboard worker.
@@ -48,7 +52,11 @@ npx wrangler secret put GITHUB_ORG
 npx wrangler secret put GITHUB_PROJECT_NUMBER
 npx wrangler secret put DISCORD_DASHBOARD_WEBHOOK_URL
 npx wrangler secret put DISCORD_ALERTS_WEBHOOK_URL
+npx wrangler secret put DISCORD_DASHBOARD_MESSAGE_ID
 ```
+
+If you want fixed-message mode, `DISCORD_DASHBOARD_MESSAGE_ID` must be the ID of an existing Discord message created by the same webhook in `DISCORD_DASHBOARD_WEBHOOK_URL`.
+If it is missing, empty, or invalid, the worker falls back to posting a new dashboard message through the webhook.
 
 ## Local testing
 
@@ -88,6 +96,7 @@ npx wrangler deploy
 - Reads GitHub Projects data through the GitHub GraphQL API
 - Renders a Discord-friendly dashboard summary
 - Posts the summary to the dashboard webhook on a cron schedule
+- Can update one fixed Discord message when `DISCORD_DASHBOARD_MESSAGE_ID` is configured
 - Sends a failure alert to the alerts webhook if the scheduled run fails
 
 ## What v1 does not do
@@ -97,3 +106,15 @@ npx wrangler deploy
 - It does not run inside the Expo app
 - It does not move code into `app/`, `src/`, or other mobile app directories
 - It does not maintain a full Discord bot architecture
+
+## Delivery modes
+
+Fallback mode:
+
+- If `DISCORD_DASHBOARD_MESSAGE_ID` is not set, the worker posts a new dashboard message on each scheduled run.
+
+Fixed-message mode:
+
+- If `DISCORD_DASHBOARD_MESSAGE_ID` is set, the worker first tries to edit that message in place.
+- If the edit succeeds, the dashboard stays in one fixed Discord message.
+- If the edit cannot be performed, the worker safely falls back to posting a new webhook message.
