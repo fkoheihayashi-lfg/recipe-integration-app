@@ -34,7 +34,7 @@ if (!env.projectNumber) {
 // GraphQL query to fetch project items
 const PROJECT_QUERY = `
 query ProjectItems($org: String!, $number: Int!, $cursor: String) {
-  organization(login: $org) {
+  user(login: $org) {
     projectV2(number: $number) {
       title
       items(first: 100, after: $cursor) {
@@ -180,7 +180,7 @@ async function fetchProjectItems() {
       cursor,
     });
 
-    const projectData = response?.data?.organization?.projectV2;
+    const projectData = response?.data?.user?.projectV2;
     if (!projectData) {
       throw new Error(
         `Project V2 #${env.projectNumber} not found in organization ${env.org}. ` +
