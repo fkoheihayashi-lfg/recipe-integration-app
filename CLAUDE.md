@@ -1,36 +1,37 @@
 # CLAUDE.md
 
 ## Mission
-Implement and maintain a Discord progress dashboard system.
+Implement and maintain a GitHub-native progress dashboard.
 
-## Product rules
-- GitHub Projects is the source of truth.
-- Discord is read-only for dashboard display in v1.
-- Do not infer status from Discord conversation.
-- Do not write back to GitHub Project fields in v1 unless explicitly asked.
-- Keep the system simple, robust, and reversible.
+## Phase 1 Rules
+- **GitHub Projects** is the source of truth
+- **GitHub Issues** display the dashboard (no Discord webhooks needed)
+- **GitHub Actions** updates the dashboard automatically
+- Do not infer status from conversation—only from Project fields
+- Do not write back to Project fields in v1 unless explicitly asked
+- Keep the system simple, robust, and reversible
 
-## Required GitHub Project fields
-- Status
-- Assignee
-- Area
-- Next Step
-- Blocker Reason
+## Required GitHub Project Fields
+- **Status** (single select): task status
+- **Assignee** (person): who is working on it
+- **Area** (single select): optional, for grouping
+- **Next Step** (text): optional, what comes next
+- **Blocker Reason** (text): optional, why it's stuck
 
-## Expected status values
-- これから
-- 作業中
-- 確認待ち
-- 困ってる
-- 完了
+## Expected Status Values
+- これから (To Do)
+- 作業中 (In Progress)
+- 確認待ち (Waiting for Review)
+- 困ってる (Blocked/Stuck)
+- 完了 (Done)
 
-## Worker responsibilities
-- Fetch ProjectV2 items through GitHub GraphQL
-- Normalize Issue / PR / Draft issue into one shape
-- Aggregate counts
-- Render dashboard text
-- Update fixed Discord webhook messages
-- Post alerts when blocker state changes
+## GitHub Actions Dashboard Responsibilities
+- Query GitHub Projects via GraphQL API
+- Normalize Issue / PR / Draft issue data
+- Aggregate counts by status
+- Render dashboard markdown
+- Update a fixed GitHub Issue with the summary
+- Run on schedule (no manual intervention needed)
 
 ## Guardrails
 - Prefer small PRs
@@ -38,7 +39,8 @@ Implement and maintain a Discord progress dashboard system.
 - Add comments only where they reduce ambiguity
 - Avoid introducing databases in v1
 - Avoid UI frameworks or unnecessary libraries
-- Prefer plain TypeScript and fetch
+- Prefer plain Node.js and standard HTTPS for API calls
+- No external webhooks or third-party services in v1
 
 ## Review expectations
 Whenever you change code:
