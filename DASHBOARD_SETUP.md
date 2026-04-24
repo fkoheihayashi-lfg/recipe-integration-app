@@ -6,7 +6,7 @@ The Progress Dashboard automatically updates a GitHub Issue with your project's 
 
 - **GitHub-native**: Uses GitHub Projects as the source of truth
 - **Automatic updates**: Runs on a schedule (daily at 9 AM UTC)
-- **No secrets required**: Uses the built-in GitHub Actions token for repo access
+- **Supports all project types**: User-owned, organization, and repository projects
 - **One command manual trigger**: `gh workflow run update-dashboard.yml`
 - **Beginner-friendly**: See progress in a simple markdown format
 
@@ -32,33 +32,35 @@ gh secret set GITHUB_PROJECT_NUMBER --body "123"
 # 4. Value: your project number
 ```
 
-### 2. (Optional) Authenticate for Organization-Level Projects
+### 2. Create a Personal Access Token (PAT)
 
-If your GitHub Project is at the **organization level** (not repository level):
+The dashboard requires a Personal Access Token to read GitHub Projects. This token needs permission to access both public and private projects.
 
-The built-in `GITHUB_TOKEN` in Actions may need additional permissions. You have two options:
+**Create a fine-grained PAT:**
 
-**Option A: Use a Personal Access Token (recommended for org-level projects)**
+1. Go to: https://github.com/settings/tokens?type=beta
+2. Click "Generate new token"
+3. Name: `dashboard-token`
+4. Expiration: As needed (recommended: 90 days or "No expiration")
+5. **Repository access**: Select "Only select repositories" → choose this repository
+6. **Permissions** (under "Repository permissions"):
+   - ✅ Issues: `read and write`
+   - ✅ Projects: `read-only`
+7. Click "Generate token"
+8. Copy the token (starts with `ghp_`)
+
+**Add the token as a repository secret:**
 
 ```bash
-# Create a fine-grained PAT with read:project and read:org permissions
-# https://github.com/settings/tokens?type=beta
-
-# Then add it as a repository secret
-gh secret set GH_TOKEN_DASHBOARD --body "ghp_xxxxx"
+gh secret set DASHBOARD_TOKEN --body "ghp_xxxxx"
 ```
 
-Then update `.github/workflows/update-dashboard.yml` to use it:
-
-```yaml
-env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN_DASHBOARD }}
-  # ... rest of env vars
-```
-
-**Option B: Stick with built-in token (works for repo-level projects)**
-
-The default `github.token` has access to your repository and its projects. This works great if your dashboard project is at the repository level.
+Or via GitHub web interface:
+1. Go to Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Name: `DASHBOARD_TOKEN`
+4. Value: Paste your token
+5. Click "Add secret"
 
 ### 3. Verify Setup
 
@@ -72,6 +74,7 @@ Then check the progress:
 
 ```bash
 gh run list --workflow=update-dashboard.yml
+gh run view <run-id>  # Shows detailed logs if there's an error
 ```
 
 View the dashboard issue:
@@ -79,7 +82,13 @@ View the dashboard issue:
 ```bash
 # Find the "Progress Dashboard" issue
 gh issue list --label=dashboard
+gh issue view <issue-number>
 ```
+
+**Success indicators:**
+- ✅ Workflow run completes without errors
+- ✅ GitHub Issue is created/updated with dashboard
+- ✅ Dashboard shows your project title and task count
 
 ## 📊 What You'll See
 
@@ -155,36 +164,55 @@ Edit `.github/scripts/update-dashboard.js`, in the `renderDashboard()` function 
 
 ## ❓ Troubleshooting
 
-### Issue: "Project not found"
+### Issue: "Could not resolve to a ProjectV2"
 
 ```
-Error: Project V2 #123 not found in organization myorg
+GraphQL error: Could not resolve to a ProjectV2 with the number
 ```
 
 **Fix:**
-1. Verify `GITHUB_PROJECT_NUMBER` is correct
-2. For organization projects, ensure you have the right token set
-3. Check that the token has `read:project` permissions
+1. Verify `PROJECT_NUMBER` is correct (check your GitHub Projects URL)
+2. Ensure `DASHBOARD_TOKEN` is set (not the default `GITHUB_TOKEN`)
+3. Token must have `read:project` permission
+4. Token must have repository access to this repo
 
-### Issue: "Unauthorized"
+### Issue: "Unauthorized" or "403"
 
 The token doesn't have permission. Check:
-1. For repo projects: default `github.token` should work
-2. For org projects: use a PAT with `read:org` and `read:project`
-3. Token must have `issues:write` for updating the issue
+1. `DASHBOARD_TOKEN` is set in repository secrets
+2. Token has `read:project` permission
+3. Token has `issues:write` permission
+4. Token is still valid (hasn't expired)
+5. Token has access to this repository
 
-### Issue: Dashboard issue not created
+**To fix:**
+```bash
+# Create a new token with proper permissions (see Step 2 above)
+gh secret set DASHBOARD_TOKEN --body "ghp_xxxxx"
+```
 
-The token needs `issues:write` permission. The default `github.token` should have this. If using a PAT, ensure it includes this scope.
+### Issue: "Project not found" error message
+
+```
+Project V2 #123 not found for owner fkoheihayashi-lfg
+```
+
+**Fix:**
+1. Verify `PROJECT_NUMBER` is correct
+2. Check your GitHub Projects URL: `github.com/users/USERNAME/projects/123`
+3. Ensure the project is accessible with your token
 
 ### Issue: Workflow doesn't run
 
 1. Check `.github/workflows/update-dashboard.yml` exists
-2. Verify the workflow file has no syntax errors:
+2. Verify workflow file has no syntax errors:
    ```bash
    gh workflow list
    ```
-3. Ensure `GITHUB_PROJECT_NUMBER` is set as a secret
+3. Ensure `PROJECT_NUMBER` and `DASHBOARD_TOKEN` are set as secrets:
+   ```bash
+   gh secret list
+   ```
 
 ## 📝 Project Field Requirements
 
@@ -206,9 +234,15 @@ Expected status values:
 ## 🔐 Security Notes
 
 - **No Discord webhooks**: Eliminates a class of secrets to manage
-- **GitHub-native**: Uses the repository's built-in authentication
+- **GitHub-native**: Uses a Personal Access Token with minimal scopes
+- **Limited permissions**: Token only has `read:project` and `issues:write`
 - **No external services**: Everything stays within GitHub Actions
 - **No database**: Pure computation, no persistent state outside GitHub
+- **Token best practices**: 
+  - Use fine-grained PATs (not classic tokens) when possible
+  - Set repository-level access only (not all repositories)
+  - Set short expiration (90 days recommended)
+  - Rotate token regularly
 
 ## 🤝 Next Steps
 

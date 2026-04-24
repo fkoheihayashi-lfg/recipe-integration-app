@@ -24,7 +24,7 @@ jobs:
 
       - name: Generate and update dashboard
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.DASHBOARD_TOKEN }}
           GITHUB_ORG: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
           GITHUB_PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}

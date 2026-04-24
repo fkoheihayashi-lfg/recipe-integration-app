@@ -25,16 +25,22 @@
 
 ---
 
-## Setup in 3 Commands
+## Setup in 4 Commands
 
 ```bash
-# 1. Set your GitHub Project number
-gh secret set GITHUB_PROJECT_NUMBER --body "123"
+# 1. Create Personal Access Token
+# Go to: https://github.com/settings/tokens?type=beta
+# Permissions needed: read:project, issues:write
+# Then add it:
+gh secret set DASHBOARD_TOKEN --body "ghp_xxxxx"
 
-# 2. Test it
+# 2. Set your GitHub Project number
+gh secret set PROJECT_NUMBER --body "123"
+
+# 3. Test it
 gh workflow run update-dashboard.yml
 
-# 3. View the dashboard
+# 4. View the dashboard
 gh issue list --label=dashboard
 ```
 
@@ -56,7 +62,9 @@ gh issue list --label=dashboard
 
 ## Testing Checklist
 
-- [ ] Set `GITHUB_PROJECT_NUMBER` secret
+- [ ] Create Personal Access Token with `read:project` and `issues:write`
+- [ ] Set `DASHBOARD_TOKEN` secret
+- [ ] Set `PROJECT_NUMBER` secret
 - [ ] Run: `gh workflow run update-dashboard.yml`
 - [ ] Check: `gh run list --workflow=update-dashboard.yml`
 - [ ] Find: `gh issue list --label=dashboard`
@@ -83,9 +91,16 @@ gh issue edit <issue-number> --body "new body"   # Edit dashboard manually
 
 ### Secret Management
 ```bash
-gh secret set GITHUB_PROJECT_NUMBER --body "123" # Set project number
-gh secret list                                   # Verify secrets are set
-gh secret remove GITHUB_PROJECT_NUMBER           # Delete secret
+# Required secrets
+gh secret set DASHBOARD_TOKEN --body "ghp_xxxxx"  # Personal Access Token
+gh secret set PROJECT_NUMBER --body "123"         # Project number
+
+# Verify
+gh secret list
+
+# Delete if needed
+gh secret remove DASHBOARD_TOKEN
+gh secret remove PROJECT_NUMBER
 ```
 
 ---

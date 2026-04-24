@@ -33,7 +33,7 @@ if (!env.projectNumber) {
 
 // GraphQL query to fetch project items
 const PROJECT_QUERY = `
-query ProjectItems($org: String!, $number: Int!, $cursor: String) {
+query ProjectItems($org: String!, $repo: String!, $number: Int!, $cursor: String) {
   repository(owner: $org, name: $repo) {
     projectV2(number: $number) {
       title
@@ -176,6 +176,7 @@ async function fetchProjectItems() {
   while (true) {
     const response = await graphqlRequest(PROJECT_QUERY, {
       org: env.org,
+      repo: env.repo,
       number: Number(env.projectNumber),
       cursor,
     });
