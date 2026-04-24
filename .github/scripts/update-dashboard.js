@@ -34,7 +34,7 @@ if (!env.projectNumber) {
 // GraphQL query to fetch project items
 const PROJECT_QUERY = `
 query ProjectItems($org: String!, $number: Int!, $cursor: String) {
-  user(login: $org) {
+  repository(owner: $org, name: $repo) {
     projectV2(number: $number) {
       title
       items(first: 100, after: $cursor) {
@@ -180,10 +180,10 @@ async function fetchProjectItems() {
       cursor,
     });
 
-    const projectData = response?.data?.user?.projectV2;
+    const projectData = response?.data?.repository?.projectV2;
     if (!projectData) {
       throw new Error(
-        `Project V2 #${env.projectNumber} not found in organization ${env.org}. ` +
+        `Project V2 #${env.projectNumber} not found for owner ${env.org}. ` +
           'Check GITHUB_ORG and GITHUB_PROJECT_NUMBER.'
       );
     }
