@@ -1,17 +1,9 @@
-import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-
-// ✅ Reads your API key safely from .env
-const OCR_API_KEY = process.env.EXPO_PUBLIC_OCR_SPACE_API_KEY;
 
 type OcrResult = {
   imageUri?: string;
@@ -28,10 +20,8 @@ type OcrScannerProps = {
 export default function OcrScanner({ onClose, onResult }: OcrScannerProps) {
   const handleFakeResult = () => {
     onResult({
+      rawText: "Test Recipe\nEggs\nMilk\nFlour",
       imageUri: undefined,
-      rawText: "Test Recipe\nEggs\nMilk\nButter",
-      titleSuggestion: "Test Recipe",
-      notesSuggestion: "Eggs\nMilk\nButter",
     });
   };
 
