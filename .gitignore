@@ -45,3 +45,5 @@ app-example
 # Local secrets / Wrangler local state
 worker/.dev.vars
 worker/.wrangler/
+
+.env
