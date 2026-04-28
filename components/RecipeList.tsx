@@ -20,7 +20,13 @@ export default function RecipeList({
       keyExtractor={(item) => item.id}
       style={styles.list}
       contentContainerStyle={styles.listContent}
-      ListEmptyComponent={<Text style={styles.emptyText}>No recipes yet</Text>}
+      ListEmptyComponent={<View style={styles.emptyContainer}>
+        <Text style={style.empytTitle}>No recipes yet</Text>
+        <Text style={styles.emptySubtitle}>
+          Add your first recipe to start building your cookbook.
+        </Text>
+      </View>
+      }
       renderItem={({ item }) => (
         <View style={styles.recipeItem}>
           <TouchableOpacity onPress={() => onPressItem(item)}>
@@ -45,10 +51,17 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+    flexGrow: 1, // Ensure empty state centres correctly
   },
-  emptyText: {
+  emptyTitle: {
+    fontsize: 18,
+    fontweight: "bold",
+    mrgininbottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
     color: "#666",
-    marginTop: 12,
+    textAlignL "center",
   },
   recipeItem: {
     padding: 12,
