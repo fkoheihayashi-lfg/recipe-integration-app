@@ -21,7 +21,7 @@ export default function RecipeList({
       style={styles.list}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={<View style={styles.emptyContainer}>
-        <Text style={style.empytTitle}>No recipes yet</Text>
+        <Text style={styles.empytTitle}>No recipes yet</Text>
         <Text style={styles.emptySubtitle}>
           Add your first recipe to start building your cookbook.
         </Text>
@@ -51,17 +51,23 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
-    flexGrow: 1, // Ensure empty state centres correctly
+    flexGrow: 1, 
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   emptyTitle: {
-    fontsize: 18,
-    fontweight: "bold",
-    mrgininbottom: 8,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
     color: "#666",
-    textAlignL "center",
+    textAlign: "center",
   },
   recipeItem: {
     padding: 12,
