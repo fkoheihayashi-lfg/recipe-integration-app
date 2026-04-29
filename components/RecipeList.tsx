@@ -21,7 +21,7 @@ export default function RecipeList({
       style={styles.list}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={<View style={styles.emptyContainer}>
-        <Text style={styles.empytTitle}>No recipes yet</Text>
+        <Text style={styles.emptyTitle}>No recipes yet</Text>
         <Text style={styles.emptySubtitle}>
           Add your first recipe to start building your cookbook.
         </Text>
