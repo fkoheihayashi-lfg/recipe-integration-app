@@ -1,101 +1,73 @@
-import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import type { Recipe } from "../types/recipe";
+import React from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Recipe } from '../types/recipe';
 
-type RecipeListProps = {
+interface RecipeListProps {
   recipes: Recipe[];
-  onPressItem: (recipe: Recipe) => void;
-  onEdit: (recipe: Recipe) => void;
-  onDelete: (id: string) => void;
-};
+  onRecipePress: (recipe: Recipe) => void;
+}
 
-export default function RecipeList({
-  recipes,
-  onPressItem,
-  onEdit,
-  onDelete,
-}: RecipeListProps) {
+const RecipeList: React.FC<RecipeListProps> = ({ recipes, onRecipePress }) => {
+  
+  // This is the part that handles the "Empty State"
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyTitle}>No recipes yet</Text>
+      <Text style={styles.emptySubtitle}>
+        Add your first recipe to start building your cookbook.
+      </Text>
+    </View>
+  );
+
   return (
     <FlatList
       data={recipes}
       keyExtractor={(item) => item.id}
-      style={styles.list}
-      contentContainerStyle={styles.listContent}
-      ListEmptyComponent={<View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>No recipes yet</Text>
-        <Text style={styles.emptySubtitle}>
-          Add your first recipe to start building your cookbook.
-        </Text>
-      </View>
-      }
       renderItem={({ item }) => (
-        <View style={styles.recipeItem}>
-          <TouchableOpacity onPress={() => onPressItem(item)}>
-            <Text style={styles.recipeTitle}>{item.title}</Text>
-            <Text style={styles.recipeNotes}>{item.notes || "No notes"}</Text>
-            {item.imageUri ? <Text style={styles.imageIndicator}>📷 Image attached</Text> : null}
-          </TouchableOpacity>
-
-          <View style={styles.recipeButtonRow}>
-            <Button title="Edit" onPress={() => onEdit(item)} />
-            <Button title="Delete" onPress={() => onDelete(item.id)} />
-          </View>
-        </View>
+        <TouchableOpacity 
+          style={styles.recipeItem} 
+          onPress={() => onRecipePress(item)}
+        >
+          <Text style={styles.recipeTitle}>{item.title}</Text>
+        </TouchableOpacity>
       )}
+      // This tells the list to show our message if 'data' is empty
+      ListEmptyComponent={renderEmptyState}
+      contentContainerStyle={recipes.length === 0 ? { flexGrow: 1 } : null}
     />
   );
-}
+};
 
 const styles = StyleSheet.create({
-  list: {
-    flex: 1,
+  recipeItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
   },
-  listContent: {
-    paddingBottom: 20,
-    flexGrow: 1, 
+  recipeTitle: {
+    fontSize: 18,
   },
+  // --- NEW STYLES FOR YOUR TASK ---
   emptyContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    marginTop: 50,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  recipeItem: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    marginBottom: 10,
-    backgroundColor: "#f9f9f9",
-  },
-  recipeTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  recipeNotes: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 10,
-  },
-  recipeButtonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  imageIndicator: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 2,
-    marginBottom: 4,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
+
+export default RecipeList;
