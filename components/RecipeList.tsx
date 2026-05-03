@@ -23,7 +23,7 @@ export default function RecipeList({
       ListEmptyComponent={<View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>No recipes yet</Text>
         <Text style={styles.emptySubtitle}>
-          Add your first recipe to start building your cookbook.
+          Add your first recipe to get started.
         </Text>
       </View>
       }
@@ -70,22 +70,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   recipeItem: {
-    padding: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 12,
     backgroundColor: "#f9f9f9",
   },
   recipeTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   recipeNotes: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 10,
+    lineHeight: 20,
+    marginBottom: 12,
   },
   recipeButtonRow: {
     flexDirection: "row",
