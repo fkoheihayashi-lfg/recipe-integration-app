@@ -1,118 +1,102 @@
-import React from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Recipe } from "../types/recipe";
+import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import type { Recipe } from "../types/recipe";
 
-interface RecipeListProps {
+type RecipeListProps = {
   recipes: Recipe[];
-  onRecipePress: (recipe: Recipe) => void;
+  onPressItem: (recipe: Recipe) => void;
   onEdit: (recipe: Recipe) => void;
   onDelete: (id: string) => void;
-}
+};
 
-const RecipeList: React.FC<RecipeListProps> = ({ 
-  recipes, 
-  onRecipePress, 
-  onEdit, 
-  onDelete 
-}) => {
-  
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyTitle}>No recipes yet</Text>
-      <Text style={styles.emptySubtitle}>
-        Add your first recipe to start building your cookbook.
-      </Text>
-    </View>
-  );
-
+export default function RecipeList({
+  recipes,
+  onPressItem,
+  onEdit,
+  onDelete,
+}: RecipeListProps) {
   return (
     <FlatList
       data={recipes}
       keyExtractor={(item) => item.id}
-      contentContainerStyle={recipes.length === 0 ? { flexGrow: 1 } : null}
-      ListEmptyComponent={renderEmptyState}
+      style={styles.list}
+      contentContainerStyle={styles.listContent}
+      ListEmptyComponent={<View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>No recipes yet</Text>
+        <Text style={styles.emptySubtitle}>
+          Add your first recipe to get started.
+        </Text>
+      </View>
+      }
       renderItem={({ item }) => (
         <View style={styles.recipeItem}>
-          <TouchableOpacity 
-            style={styles.recipeContent} 
-            onPress={() => onRecipePress(item)}
-          >
+          <TouchableOpacity onPress={() => onPressItem(item)}>
             <Text style={styles.recipeTitle}>{item.title}</Text>
-            {item.notes && <Text style={styles.notes}>{item.notes}</Text>}
+            <Text style={styles.recipeNotes}>{item.notes || "No notes"}</Text>
+            {item.imageUri ? <Text style={styles.imageIndicator}>📷 Image attached</Text> : null}
           </TouchableOpacity>
-          
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={() => onEdit(item)} style={styles.editButton}>
-              <Text style={styles.buttonText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.deleteButton}>
-              <Text style={styles.buttonText}>Delete</Text>
-            </TouchableOpacity>
+
+          <View style={styles.recipeButtonRow}>
+            <Button title="Edit" onPress={() => onEdit(item)} />
+            <Button title="Delete" onPress={() => onDelete(item.id)} />
           </View>
         </View>
       )}
     />
   );
-};
+}
 
 const styles = StyleSheet.create({
-  recipeItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  recipeContent: {
+  list: {
     flex: 1,
   },
-  recipeTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  notes: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  editButton: {
-    backgroundColor: '#007AFF',
-    padding: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  deleteButton: {
-    backgroundColor: '#FF3B30',
-    padding: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 12,
+  listContent: {
+    paddingBottom: 20,
+    flexGrow: 1, 
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   emptyTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: "bold",
     marginBottom: 8,
   },
   emptySubtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+  },
+  recipeItem: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: "#f9f9f9",
+  },
+  recipeTitle: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
+  recipeNotes: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  recipeButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  imageIndicator: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 2,
+    marginBottom: 4,
   },
 });
-
-export default RecipeList;
