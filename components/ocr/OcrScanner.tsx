@@ -38,8 +38,9 @@ export default function OcrScanner({ onClose, onResult }: OcrScannerProps) {
     }
     const result = await ImagePicker.launchCameraAsync({
       base64: true,
-      quality: 0.3,
+      quality: 0.7,
       allowsEditing: true,
+      exif: false,
     });
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
@@ -57,8 +58,9 @@ export default function OcrScanner({ onClose, onResult }: OcrScannerProps) {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       base64: true,
-      quality: 0.3,
+      quality: 0.7,
       allowsEditing: true,
+      exif: false,
     });
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
@@ -98,7 +100,7 @@ export default function OcrScanner({ onClose, onResult }: OcrScannerProps) {
         return;
       }
       setRawOcrText(rawText);
-      const lines = rawText.split("\n").filter((l) => l.trim() !== "");
+      const lines = rawText.split("\n").filter((l: string) => l.trim() !== "");
       const titleSuggestion = lines[0] || "Untitled";
       const notesSuggestion = lines.slice(1).join("\n") || "";
       onResult({
